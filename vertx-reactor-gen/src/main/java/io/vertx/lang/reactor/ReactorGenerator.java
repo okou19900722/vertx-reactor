@@ -297,20 +297,18 @@ class ReactorGenerator extends AbstractRxGenerator {
         TypeInfo abc = parameterizedTypeInfo.getArg(0);
         if (abc.getKind() == ASYNC_RESULT) {
           TypeInfo tutu = ((ParameterizedTypeInfo) abc).getArg(0);
-          return "new Handler<AsyncResult<" + genTypeName(tutu) + ">>() {\n" +
-            "      public void handle(AsyncResult<" + genTypeName(tutu) + "> ar) {\n" +
+          return "ar -> {\n" +
             "        if (ar.succeeded()) {\n" +
             "          " + expr + ".handle(io.vertx.core.Future.succeededFuture(" + genConvParam(tutu, method, "ar.result()") + "));\n" +
             "        } else {\n" +
             "          " + expr + ".handle(io.vertx.core.Future.failedFuture(ar.cause()));\n" +
             "        }\n" +
-            "      }\n" +
             "    }";
         } else {
-          return "new Handler<" + genTypeName(abc) + ">() {\n" +
-            "      public void handle(" + genTypeName(abc) + " event) {\n" +
+          return "event -> {\n" +
+//            "      public void handle(" + genTypeName(abc) + " event) {\n" +
             "          " + expr + ".handle(" + genConvParam(abc, method, "event") + ");\n" +
-            "      }\n" +
+//            "      }\n" +
             "    }";
         }
       } else if (kind == LIST || kind == SET) {
@@ -394,30 +392,24 @@ class ReactorGenerator extends AbstractRxGenerator {
         ClassKind eventKind = eventType.getKind();
         if (eventKind == ASYNC_RESULT) {
           TypeInfo resultType = ((ParameterizedTypeInfo) eventType).getArg(0);
-          return "new Handler<AsyncResult<" + resultType.getName() + ">>() {\n" +
-            "      public void handle(AsyncResult<" + resultType.getName() + "> ar) {\n" +
+          return "ar -> {\n" +
             "        if (ar.succeeded()) {\n" +
             "          " + expr + ".handle(io.vertx.core.Future.succeededFuture(" + genConvReturn(resultType, method, "ar.result()") + "));\n" +
             "        } else {\n" +
             "          " + expr + ".handle(io.vertx.core.Future.failedFuture(ar.cause()));\n" +
             "        }\n" +
-            "      }\n" +
             "    }";
         } else {
-          return "new Handler<" + eventType.getName() + ">() {\n" +
-            "      public void handle(" + eventType.getName() + " event) {\n" +
+          return "event -> {\n" +
             "        " + expr + ".handle(" + genConvReturn(eventType, method, "event") + ");\n" +
-            "      }\n" +
             "    }";
         }
       } else if (kind == FUNCTION) {
         TypeInfo argType = parameterizedTypeInfo.getArg(0);
         TypeInfo retType = parameterizedTypeInfo.getArg(1);
-        return "new java.util.function.Function<" + argType.getName() + "," + retType.getName() + ">() {\n" +
-          "      public " + retType.getName() + " apply(" + argType.getName() + " arg) {\n" +
-          "        " + genTypeName(retType) + " ret = " + expr + ".apply(" + genConvReturn(argType, method, "arg") + ");\n" +
-          "        return " + genConvParam(retType, method, "ret") + ";\n" +
-          "      }\n" +
+        return "arg -> {\n" +
+          "      " + genTypeName(retType) + " val = " + expr + ".apply(" + genConvReturn(argType, method, "arg") + ");\n" +
+          "      return " + genConvParam(retType, method, "val") + ";\n" +
           "    }";
       } else if (kind == LIST || kind == SET) {
         return expr + ".stream().map(elt -> " + genConvParam(parameterizedTypeInfo.getArg(0), method, "elt") + ").collect(java.util.stream.Collectors.to" + type.getRaw().getSimpleName() + "())";
