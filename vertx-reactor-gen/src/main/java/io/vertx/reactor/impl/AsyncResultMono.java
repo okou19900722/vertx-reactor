@@ -16,7 +16,14 @@ public class AsyncResultMono<T> extends Mono<T> {
   }
 
   public static <T> Mono<T> toMono(Consumer<Handler<AsyncResult<T>>> subscriptionConsumer) {
-    return onAssembly(new AsyncResultMono<>(subscriptionConsumer));
+//    return onAssembly(new AsyncResultMono<>(subscriptionConsumer));
+    return Mono.create(sink -> subscriptionConsumer.accept(r -> {
+      if (r.succeeded()) {
+        sink.success(r.result());
+      } else {
+        sink.error(r.cause());
+      }
+    }));
   }
 
   @Override
