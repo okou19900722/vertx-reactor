@@ -7,7 +7,6 @@ import reactor.core.publisher.Flux;
 import java.util.function.Function;
 
 public class FluxHelper {
-
   public static <T> Flux<T> toFlux(ReadStream<T> stream) {
     return new FluxReadStream<>(stream, Function.identity());
   }

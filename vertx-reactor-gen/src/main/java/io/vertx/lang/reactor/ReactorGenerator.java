@@ -32,8 +32,7 @@ class ReactorGenerator extends AbstractRxGenerator {
   }
 
   @Override
-  protected void genToObservable(ApiTypeInfo type, PrintWriter writer) {
-    TypeInfo streamType = type.getReadStreamArg();
+  protected void genToObservable(TypeInfo streamType, PrintWriter writer) {
     writer.print("  private Flux<");
     writer.print(genTypeName(streamType));
     writer.println("> flux;");
@@ -110,21 +109,43 @@ class ReactorGenerator extends AbstractRxGenerator {
     writer.println();
   }
 
-//  private String genFutureMethodName(MethodInfo method) {
-//    return "rx" + Character.toUpperCase(method.getName().charAt(0)) + method.getName().substring(1);
-//  }
+  @Override
+  protected void genToSubscriber(TypeInfo streamType, PrintWriter writer) {
+    writer.format("  private io.vertx.reactor.WriteStreamSubscriber<%s> subscriber;%n", genTypeName(streamType));
+    writer.println();
+    genToXXXEr(streamType, "Subscriber", "subscriber", writer);
+  }
+  private void genToXXXEr(TypeInfo streamType, String rxType, String rxName, PrintWriter writer) {
+    writer.format("  public synchronized io.vertx.reactor.WriteStream%s<%s> to%s() {%n", rxType, genTypeName(streamType), rxType);
+
+    writer.format("    if (%s == null) {%n", rxName);
+
+    if (streamType.getKind() == ClassKind.API) {
+      writer.format("      java.util.function.Function<%s, %s> conv = %s::getDelegate;%n", genTypeName(streamType.getRaw()), streamType.getName(), genTypeName(streamType));
+
+      writer.format("      %s = io.vertx.reactor.ReactorHelper.to%s(getDelegate(), conv);%n", rxName, rxType);
+    } else if (streamType.isVariable()) {
+      String typeVar = streamType.getSimpleName();
+      writer.format("      java.util.function.Function<%s, %s> conv = (java.util.function.Function<%s, %s>) __typeArg_0.unwrap;%n", typeVar, typeVar, typeVar, typeVar);
+
+      writer.format("      %s = io.vertx.reactor.ReactorHelper.to%s(getDelegate(), conv);%n", rxName, rxType);
+    } else {
+      writer.format("      %s = io.vertx.reactor.ReactorHelper.to%s(getDelegate());%n", rxName, rxType);
+    }
+
+    writer.println("    }");
+    writer.format("    return %s;%n", rxName);
+    writer.println("  }");
+    writer.println();
+  }
 
   @Override
   protected void genMethods(ClassModel model, MethodInfo method, List<String> cacheDecls, PrintWriter writer) {
     genMethod1(model, method, cacheDecls, writer);
     MethodInfo flowableOverload = genOverloadedMethod(method, Flux.class);
-//    MethodInfo observableOverload = genOverloadedMethod(method, Flux.class);
     if (flowableOverload != null) {
       genMethod1(model, flowableOverload, cacheDecls, writer);
     }
-//    if (observableOverload != null) {
-//      genMethod(model, observableOverload, cacheDecls, writer);
-//    }
   }
 
   @Override
@@ -133,7 +154,6 @@ class ReactorGenerator extends AbstractRxGenerator {
     ClassTypeInfo raw = futMethod.getReturnType().getRaw();
     String methodSimpleName = raw.getSimpleName();
     String adapterType = "io.vertx.reactor.impl.AsyncResult" + methodSimpleName + ".to" + methodSimpleName;
-    String rxType = raw.getName();
     startMethodTemplate(model.getType(), futMethod, "", writer);
     writer.println(" { ");
     writer.print("    return ");
@@ -276,7 +296,7 @@ class ReactorGenerator extends AbstractRxGenerator {
           tmp.append(", ");
           ClassKind argKind = arg.getKind();
           if (argKind == API) {
-            tmp.append(arg.translateName(id)).append(".__TYPE_ARG");
+            tmp.append("(io.vertx.lang.rx.TypeArg) ").append(arg.getRaw().translateName(id)).append(".__TYPE_ARG");
           } else {
             String typeArg = "io.vertx.lang.rx.TypeArg.unknown()";
             if (argKind == OBJECT && arg.isVariable()) {
@@ -407,8 +427,8 @@ class ReactorGenerator extends AbstractRxGenerator {
       } else if (kind == FUNCTION) {
         TypeInfo argType = parameterizedTypeInfo.getArg(0);
         TypeInfo retType = parameterizedTypeInfo.getArg(1);
-        return "arg -> {\n" +
-          "      " + genTypeName(retType) + " val = " + expr + ".apply(" + genConvReturn(argType, method, "arg") + ");\n" +
+        return "arg0 -> {\n" +
+          "      " + genTypeName(retType) + " val = " + expr + ".apply(" + genConvReturn(argType, method, "arg0") + ");\n" +
           "      return " + genConvParam(retType, method, "val") + ";\n" +
           "    }";
       } else if (kind == LIST || kind == SET) {
