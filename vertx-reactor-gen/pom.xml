@@ -5,7 +5,7 @@
   <parent>
     <artifactId>vertx-reactor-parent</artifactId>
     <groupId>tk.okou</groupId>
-    <version>3.6.0-SNAPSHOT</version>
+    <version>3.7.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -29,6 +29,10 @@
       <groupId>org.reactivestreams</groupId>
       <artifactId>reactive-streams</artifactId>
     </dependency>
+    <!--<dependency>-->
+      <!--<groupId>io.vertx</groupId>-->
+      <!--<artifactId>vertx-reactive-streams</artifactId>-->
+    <!--</dependency>-->
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
@@ -63,7 +67,7 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-rx-gen</artifactId>
-      <version>3.6.0-SNAPSHOT</version>
+      <version>${stack.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
@@ -83,30 +87,31 @@
 
   <build>
     <plugins>
-      <!--<plugin>-->
-        <!--<artifactId>maven-resources-plugin</artifactId>-->
-        <!--<version>3.0.2</version>-->
-        <!--<executions>-->
-          <!--<execution>-->
-            <!--<id>copy-codegen-extra</id>-->
-            <!--<goals>-->
-              <!--<goal>copy-resources</goal>-->
-            <!--</goals>-->
-            <!--<phase>generate-test-sources</phase>-->
-            <!--<configuration>-->
-              <!--<outputDirectory>${project.basedir}/src/test/java/</outputDirectory>-->
-              <!--<resources>-->
-                <!--<resource>-->
-                  <!--<directory>${project.basedir}/../rx-java-codegen/src/test/java</directory>-->
-                  <!--<includes>-->
-                    <!--<include>io/vertx/codegen/extra/**</include>-->
-                  <!--</includes>-->
-                <!--</resource>-->
-              <!--</resources>-->
-            <!--</configuration>-->
-          <!--</execution>-->
-        <!--</executions>-->
-      <!--</plugin>-->
+
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.0.2</version>
+        <executions>
+          <execution>
+            <id>copy-codegen-extra</id>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <phase>generate-test-sources</phase>
+            <configuration>
+              <outputDirectory>${project.basedir}/src/test/java/</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/../rx-java-codegen/src/test/java</directory>
+                  <includes>
+                    <include>io/vertx/codegen/extra/**</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
       <!-- Configure the execution of the compiler to execute the codegen processor -->
       <plugin>
@@ -120,7 +125,7 @@
               </annotationProcessors>
               <compilerArgs>
                 <arg>-Acodegen.output=${project.basedir}/src/test</arg>
-                <arg>-Acodegen.generators=RxJava2</arg>
+                <arg>-Acodegen.generators=Reactor</arg>
               </compilerArgs>
             </configuration>
           </execution>
@@ -157,7 +162,7 @@
               <includeTypes>jar</includeTypes>
               <includeClassifiers>sources</includeClassifiers>
               <outputDirectory>${basedir}/src/test/java</outputDirectory>
-              <includes>io/vertx/core/streams/ReadStream.java,io/vertx/core/streams/StreamBase.java</includes>
+              <includes>io/vertx/core/streams/*.java</includes>
             </configuration>
           </execution>
         </executions>

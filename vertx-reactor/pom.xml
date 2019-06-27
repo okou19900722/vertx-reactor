@@ -5,12 +5,12 @@
   <parent>
     <artifactId>vertx-reactor-parent</artifactId>
     <groupId>tk.okou</groupId>
-    <version>3.6.0-SNAPSHOT</version>
+    <version>3.7.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>vertx-reactor</artifactId>
-  <version>3.6.0-SNAPSHOT</version>
+  <version>3.7.1-SNAPSHOT</version>
 
   <name>Vert.x Reactor API</name>
 
@@ -26,7 +26,6 @@
   </properties>
 
   <dependencies>
-
     <!-- Stack dependencies -->
     <dependency>
       <groupId>io.vertx</groupId>
@@ -105,6 +104,10 @@
       <version>${stack.version}</version>
       <optional>true</optional>
     </dependency>
+    <!--<dependency>-->
+      <!--<groupId>io.vertx</groupId>-->
+      <!--<artifactId>vertx-reactive-streams</artifactId>-->
+    <!--</dependency>-->
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-auth-jwt</artifactId>
@@ -320,7 +323,7 @@
     <dependency>
       <groupId>tk.okou</groupId>
       <artifactId>vertx-reactor-gen</artifactId>
-      <version>3.6.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <!-- Test dependencies -->
@@ -341,12 +344,12 @@
       <artifactId>vertx-rx-gen</artifactId>
       <type>test-jar</type>
       <scope>test</scope>
-      <version>3.6.0-SNAPSHOT</version>
+      <version>${stack.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-rx-java2-gen</artifactId>
-      <version>3.6.0-SNAPSHOT</version>
+      <groupId>tk.okou</groupId>
+      <artifactId>vertx-reactor-gen</artifactId>
+      <version>${project.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
@@ -730,7 +733,7 @@
                 <descriptor>${rxjava2.descriptor}</descriptor>
               </descriptors>
               <archive>
-                <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+<!--                <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>-->
               </archive>
             </configuration>
           </execution>
